@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const AI_SERVICE_URL =
-  process.env.AI_SERVICE_URL || "http://localhost:5000/api/detect_frame";
+  process.env.AI_SERVICE_URL || "http://103.90.225.223:5000/api/detect_frame";
 
 export const detectFrame = async (req, res) => {
   const { image } = req.body;
