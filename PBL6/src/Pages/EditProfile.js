@@ -11,6 +11,12 @@ const EditProfile = () => {
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   useEffect(() => {
     const userInfo = localStorage.getItem("user");
@@ -109,6 +115,62 @@ const EditProfile = () => {
     }
   };
 
+  const handlePasswordInput = (e) => {
+    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmitPassword = async () => {
+    const { currentPassword, newPassword, confirmPassword } = passwordData;
+
+    // Validate cơ bản
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert("Please fill in all password fields.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      alert("New password and confirm password do not match.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      alert("New password must be at least 6 characters.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        "https://sip-in-ease.duckdns.org/api/change-password", // Giả sử API endpoint là này
+        {
+          method: "POST", // Hoặc PUT tùy backend của bạn
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            currentPassword,
+            newPassword,
+          }),
+        }
+      );
+
+      const result = await response.json();
+      if (response.ok) {
+        alert("Password changed successfully!");
+        setShowPasswordModal(false);
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      } else {
+        alert(`Error: ${result.message || "Failed to change password."}`);
+      }
+    } catch (error) {
+      console.error("Error changing password:", error);
+      alert("Server error while changing password.");
+    }
+  };
+
   return (
     <div className="edit-profile">
       <h1 className="title">Edit Profile</h1>{" "}
@@ -180,6 +242,57 @@ const EditProfile = () => {
           Save{" "}
         </button>{" "}
       </div>{" "}
+      {/* --- MODAL CHANGE PASSWORD --- */}
+      {showPasswordModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Change Password</h2>
+            <div className="modal-body">
+              <div className="modal-item">
+                <label>Current Password</label>
+                <input
+                  type="password"
+                  name="currentPassword"
+                  value={passwordData.currentPassword}
+                  onChange={handlePasswordInput}
+                  placeholder="Enter current password"
+                />
+              </div>
+              <div className="modal-item">
+                <label>New Password</label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordInput}
+                  placeholder="Enter new password"
+                />
+              </div>
+              <div className="modal-item">
+                <label>Confirm Password</label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordInput}
+                  placeholder="Confirm new password"
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="cancel-btn"
+                onClick={() => setShowPasswordModal(false)}
+              >
+                Cancel
+              </button>
+              <button className="confirm-btn" onClick={handleSubmitPassword}>
+                Update Password
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
