@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # 1. DATABASE (MySQL)
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pbl6_db # <-- SỬA: Tên DB của bạn
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # 2. BACKEND (NodeJS)
+  backend:
+    build: ./PBL6_BE  # <-- Đường dẫn vào thư mục chứa code Node
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=123456
+      - DB_NAME=pbl6_db
+      - AI_SERVICE_URL=http://ai_service:5000 # <-- Backend gọi AI qua tên này
+    depends_on:
+      - db
+      - ai_service
+
+  # 3. AI SERVICE (Flask)
+  ai_service:
+    build: .  # <-- Dấu chấm nghĩa là build tại thư mục hiện tại
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./Data:/app/Data # <-- Share thư mục Data để không bị mất model
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+volumes:
+  mysql_data:

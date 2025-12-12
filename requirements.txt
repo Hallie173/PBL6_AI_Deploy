@@ -1,0 +1,6 @@
+Flask
+flask-cors
+gunicorn
+numpy
+tensorflow
+opencv-python-headless
