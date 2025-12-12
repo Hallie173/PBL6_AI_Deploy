@@ -134,7 +134,7 @@ export const login = async (req, res) => {
         userID: user.userID,
         email: user.email,
         displayName: user.displayName,
-        avatar: `http://103.90.225.223:8080/${user.avatar}`,
+        avatar: `https://sip-in-ease.duckdns.org/${user.avatar}`,
       },
     });
   } catch (error) {
@@ -228,7 +228,7 @@ export const updateProfile = async (req, res) => {
         userID: user.userID,
         email: user.email,
         displayName: user.displayName,
-        avatar: `http://103.90.225.223:8080/${user.avatar}`,
+        avatar: `https://sip-in-ease.duckdns.org/${user.avatar}`,
       },
     });
   } catch (error) {
