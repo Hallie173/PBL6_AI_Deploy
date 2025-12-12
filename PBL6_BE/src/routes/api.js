@@ -45,6 +45,6 @@ router.put(
   updateProfile
 );
 
-router.put("/change-password", authMiddleware, changePassword);
+router.post("/change-password", authMiddleware, changePassword);
 
 export default router;
