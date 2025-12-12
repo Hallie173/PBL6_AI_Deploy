@@ -14,16 +14,15 @@ import { fileURLToPath } from "url";
 import jwt from "jsonwebtoken";
 
 // --- MIDDLEWARE ---
-
 export const authMiddleware = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       return res.status(401).json({ message: "Access denied!" });
     }
-    const token = authHeader.split(" ")[1]; // Bearer TOKEN
+    const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { userID, email }
+    req.user = decoded;
     next();
   } catch (err) {
     console.error("JWT Verification Error:", err.message);
@@ -32,7 +31,6 @@ export const authMiddleware = (req, res, next) => {
 };
 
 // --- CẤU HÌNH MULTER ---
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -46,16 +44,12 @@ const storage = multer.diskStorage({
 export const upload = multer({ storage });
 
 // --- AUTH CONTROLLERS ---
-
 export const sendCode = async (req, res) => {
   try {
     const { email } = req.body;
-
     const code = generateCode();
     saveCode(email, code);
-
     await sendVerificationCode(email, code);
-
     return res.status(200).json({ message: "Verification code sent." });
   } catch (error) {
     console.error("Error sending code:", error);
@@ -65,33 +59,27 @@ export const sendCode = async (req, res) => {
 
 export const signup = async (req, res) => {
   try {
-    const { email, displayName, password, verificationCode } = req.body; // ✅ Verify code
-
+    const { email, displayName, password, verificationCode } = req.body;
     const isValid = verifyEmailCode(email, verificationCode);
     if (!isValid) {
       return res
         .status(400)
         .json({ message: "Invalid or expired verification code." });
     }
-
     if (!email || !displayName || !password) {
       return res.status(400).json({ message: "Missing required fields." });
     }
-
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: "Email already in use." });
     }
-
     const hash = await bcrypt.hash(password, 10);
-
     const newUser = await User.create({
       email,
       displayName,
       passwordHash: hash,
       avatar: null,
     });
-
     return res.status(201).json({
       message: "User created successfully",
       user: {
@@ -109,23 +97,30 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
       return res.status(400).json({ message: "Missing email or password." });
     }
-
     const user = await User.findOne({ where: { email } });
-
     if (!user) {
       return res.status(400).json({ message: "Email not found!" });
     }
-
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return res.status(400).json({ message: "Incorrect password!" });
     }
 
+    // Tạo token
     const token = generateToken(user);
+
+    // Xử lý avatar trả về
+    const baseUrl = process.env.BASE_URL || "https://sip-in-ease.duckdns.org";
+    let avatarUrl = null;
+    if (user.avatar) {
+      // Nếu trong DB đã là link http full thì giữ nguyên, nếu là path tương đối thì nối chuỗi
+      avatarUrl = user.avatar.startsWith("http")
+        ? user.avatar
+        : `${baseUrl}/${user.avatar}`;
+    }
 
     return res.status(200).json({
       message: "Login successfully!",
@@ -134,7 +129,7 @@ export const login = async (req, res) => {
         userID: user.userID,
         email: user.email,
         displayName: user.displayName,
-        avatar: `https://sip-in-ease.duckdns.org/${user.avatar}`,
+        avatar: avatarUrl,
       },
     });
   } catch (error) {
@@ -146,28 +141,22 @@ export const login = async (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { email, verificationCode, newPassword } = req.body;
-
     if (!email || !verificationCode || !newPassword) {
       return res.status(400).json({ message: "Missing required fields." });
     }
-
     const isValid = verifyEmailCode(email, verificationCode);
     if (!isValid) {
       return res
         .status(400)
         .json({ message: "Invalid or expired verification code." });
     }
-
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
-
     const hash = await bcrypt.hash(newPassword, 10);
-
     user.passwordHash = hash;
     await user.save();
-
     return res.status(200).json({ message: "Password reset successfully." });
   } catch (error) {
     console.error("Reset password error:", error);
@@ -182,9 +171,7 @@ const __dirname = path.dirname(__filename);
 
 export const updateProfile = async (req, res) => {
   try {
-    // req.user được gán từ authMiddleware
     const userID = req.user.userID;
-    // Dữ liệu từ FormData (file đã được xử lý bởi multer)
     const { displayName, newEmail, verificationCode } = req.body;
 
     const user = await User.findByPk(userID);
@@ -199,28 +186,43 @@ export const updateProfile = async (req, res) => {
           .status(400)
           .json({ message: "Invalid or expired verification code." });
       }
-
       const existingEmail = await User.findOne({ where: { email: newEmail } });
       if (existingEmail) {
         return res.status(400).json({ message: "Email already in use." });
       }
-
       user.email = newEmail;
     }
 
-    // Xử lý file (req.file chỉ tồn tại nếu frontend gửi FormData chứa file)
+    // --- XỬ LÝ FILE ẢNH AN TOÀN ---
     if (req.file) {
-      if (user.avatar && fs.existsSync(user.avatar)) {
-        fs.unlinkSync(user.avatar); // Xóa avatar cũ
+      // Chỉ xóa nếu user có avatar và avatar đó là file cục bộ (không bắt đầu bằng http)
+      if (user.avatar && !user.avatar.startsWith("http")) {
+        // Dùng process.cwd() để trỏ đúng thư mục gốc trong Docker
+        const oldPath = path.join(process.cwd(), user.avatar);
+        try {
+          if (fs.existsSync(oldPath)) {
+            fs.unlinkSync(oldPath);
+          }
+        } catch (err) {
+          console.error("Lỗi xóa ảnh cũ (Bỏ qua):", err.message);
+        }
       }
 
       const avatarPath = `uploads/${req.file.filename}`;
-      user.avatar = avatarPath; // Lưu path mới
+      user.avatar = avatarPath;
     }
 
     if (displayName) user.displayName = displayName;
 
     await user.save();
+
+    // Tạo URL trả về chuẩn
+    const baseUrl = process.env.BASE_URL || "https://sip-in-ease.duckdns.org";
+    const avatarUrl = user.avatar
+      ? user.avatar.startsWith("http")
+        ? user.avatar
+        : `${baseUrl}/${user.avatar}`
+      : null;
 
     res.status(200).json({
       message: "Profile updated successfully.",
@@ -228,7 +230,7 @@ export const updateProfile = async (req, res) => {
         userID: user.userID,
         email: user.email,
         displayName: user.displayName,
-        avatar: `https://sip-in-ease.duckdns.org/${user.avatar}`,
+        avatar: avatarUrl,
       },
     });
   } catch (error) {
@@ -255,6 +257,7 @@ export const changePassword = async (req, res) => {
 
     return res.status(200).json({ message: "Password updated" });
   } catch (e) {
+    console.error("Change password error:", e);
     res.status(500).json({ message: "Server error" });
   }
 };
