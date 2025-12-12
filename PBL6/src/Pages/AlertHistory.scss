@@ -1,0 +1,76 @@
+.alert-history {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px;
+    min-height: calc(100vh - 88px);
+    box-sizing: border-box;
+    position: relative;
+    background-color: #f5f7fa;
+
+    .alert-container {
+        width: 100%;
+        padding: 0 30px;
+        box-sizing: border-box;
+
+        .alert-item {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(31, 41, 55, 0.3);
+            border-radius: 8px;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+
+            .alert-info {
+
+                .alert-title {
+                    color: #1f2937;
+                    font-size: 20px;
+                }
+
+                .alert-time {
+                    color: #21687f;
+                    font-size: 14px;
+                    font-style: italic;
+                }
+            }
+
+            .alert-actions {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+
+                .btn-detail {
+                    background: #12b0b4;
+                    color: white;
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: background 0.2s ease;
+                    white-space: nowrap;
+                    text-decoration: none;
+                }
+
+                .btn-delete {
+                    background: red;
+                    color: white;
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: background 0.2s ease;
+                    white-space: nowrap;
+                    margin-left: 20px;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,96 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  width: 100vw;
+  box-sizing: border-box;
+  background-color: #fff;
+  box-shadow: 0 5px 6px rgba(0, 0, 0, 0.2);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+
+    .header-logo-img {
+      height: 50px;
+      width: 50px;
+      object-fit: contain;
+    }
+  }
+
+  .header-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .header-subtitle {
+    margin-left: 30px;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .header-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+
+    .welcome-message {
+      font-size: 1.2rem;
+      font-style: italic;
+      font-weight: 600;
+      color: #21687f;
+    }
+
+    .logout-button, .signup-button {
+        padding: 8px 16px;
+        background-color: #000000;
+        color: #ffffff;
+        border: 1px solid #000000;
+        border-radius: 4px;
+        font-size: 16px;
+        text-decoration: none;
+        text-align: center;
+        white-space: nowrap;
+        cursor: pointer;
+
+        &:hover {
+            color: #888888;
+        }
+    }
+
+    .login-button {
+        padding: 8px 16px;
+        background-color: transparent;
+        color: #000000;
+        border: 1px solid #000000;
+        border-radius: 4px;
+        font-size: 16px;
+        text-decoration: none;
+        text-align: center;
+        white-space: nowrap;
+        cursor: pointer;
+
+        &:hover {
+            color: #888888;
+            border: 1px solid #888888;
+        }
+    }
+  }
+
+}

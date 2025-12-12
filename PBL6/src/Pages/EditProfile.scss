@@ -1,0 +1,140 @@
+.edit-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+  min-height: calc(100vh - 88px);
+  box-sizing: border-box;
+  position: relative;
+  background-color: #f5f7fa;
+}
+
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+
+  .avatar-image {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ccc;
+    margin-bottom: 10px;
+  }
+
+  .edit-avatar-btn {
+    background-color: #12b0b4;
+    color: #fff;
+    padding: 6px 12px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background-color: #21687f;
+    }
+  }
+}
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 60%;
+
+  .info-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    label {
+      width: 30%;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .input-field {
+      flex: 1;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.2s;
+
+      &:focus {
+        border-color: #007bff;
+        outline: none;
+      }
+
+      .option-field {
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      }
+    }
+
+    .send-code-btn {
+      padding: 10px;
+      border: none;
+      color: #fff;
+      background-color: #12b0b4;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-left: 10px;
+      cursor: pointer;
+
+    &:hover {
+      background-color: #21687f;
+    }
+    }
+  }
+
+}
+
+.button-section {
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 40px;
+
+  .change-password-btn,
+  .save-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .change-password-btn {
+    background-color: #ffc107;
+    color: #000;
+
+    &:hover {
+      background-color: #e0a800;
+    }
+  }
+
+  .save-btn {
+    background-color: #28a745;
+    color: #fff;
+
+    &:hover {
+      background-color: #218838;
+    }
+  }
+}

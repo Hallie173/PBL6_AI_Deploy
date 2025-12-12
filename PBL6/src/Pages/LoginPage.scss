@@ -1,0 +1,125 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 3rem 1.5rem;
+  background-color: #1f2937;
+  color: #f1f5f9;
+
+  .login-form {
+    width: 420px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+}
+
+.login-header {
+  text-align: center;
+  margin: 0 auto;
+}
+
+.login-logo {
+  width: 100px;
+  height: auto;
+  margin: 0 auto;
+}
+
+.login-title {
+  margin: 10px auto;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.login-form-container {
+  width: 100%;
+  margin: 25px auto 0;
+  max-width: 400px;
+  background: #1f2937;
+  padding: 20px 10px;
+  border-radius: 8px;
+}
+
+.login-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  color: #e2e8f0;
+}
+
+.form-input {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+  outline: none;
+
+  &:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+  }
+}
+
+.forgot-password {
+  font-size: 0.85rem;
+  color: #818cf8;
+  text-decoration: none;
+
+  &:hover {
+    color: #a5b4fc;
+  }
+}
+
+.login-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #6366f1;
+  color: white;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #818cf8;
+  }
+}
+
+.signup-text {
+  text-align: center;
+  color: #9ca3af;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+}
+
+.signup-link {
+  color: #818cf8;
+  text-decoration: none;
+  margin-left: 0.25rem;
+
+  &:hover {
+    color: #a5b4fc;
+  }
+}
