@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+  services:
+  # --- THÊM THẰNG NÀY ---
+  caddy:
+    image: caddy:latest
+    restart: always  # <-- Tự khởi động lại nếu sập hoặc reset VPS
+    ports:
+      - "80:80"      # Cổng web thường
+      - "443:443"    # Cổng web bảo mật (HTTPS)
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile  # Link file cấu hình vào
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+
   # 1. DATABASE (MySQL)
   db:
     image: mysql:5.7
@@ -31,7 +46,7 @@ services:
       - MAIL_PASS=yequ yzgt eati wnih
       
       - JWT_SECRET=mysecretkey123
-      - BASE_URL=http://103.90.225.223:8080
+      - BASE_URL=http://sip-in-ease.duckdns.org
     depends_on:
       - db
       - ai_service
