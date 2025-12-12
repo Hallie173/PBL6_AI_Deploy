@@ -1,67 +1,66 @@
 version: '3.8'
 
 services:
-  services:
-  # --- THÊM THẰNG NÀY ---
+  # 1. CADDY (HTTPS Server & Reverse Proxy)
   caddy:
     image: caddy:latest
-    restart: always  # <-- Tự khởi động lại nếu sập hoặc reset VPS
+    restart: always
     ports:
-      - "80:80"      # Cổng web thường
-      - "443:443"    # Cổng web bảo mật (HTTPS)
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile  # Link file cấu hình vào
+      - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
       - backend
 
-  # 1. DATABASE (MySQL)
+  # 2. DATABASE (MySQL)
   db:
     image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: pbl6_db # <-- SỬA: Tên DB của bạn
+      MYSQL_DATABASE: pbl6_db
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 
-  # 2. BACKEND (NodeJS)
+  # 3. BACKEND (NodeJS)
   backend:
-    build: ./PBL6_BE  # <-- Đường dẫn vào thư mục chứa code Node
-    ports:
-      - "8080:8080"
+    build: ./PBL6_BE
     environment:
       - DB_HOST=db
       - DB_USER=root
       - DB_PASSWORD=123456
+      - DB_PASS=123456
       - DB_NAME=pbl6_db
-      - AI_SERVICE_URL=http://ai_service:5000 # <-- Backend gọi AI qua tên này
+      - DB_PORT=3306
       - PORT=8080
       - NODE_ENV=development
       - AI_SERVICE_URL=http://ai_service:5000
-      
       - MAIL_USER=phuonghaleduy@gmail.com
       - MAIL_PASS=yequ yzgt eati wnih
-      
       - JWT_SECRET=mysecretkey123
-      - BASE_URL=http://sip-in-ease.duckdns.org
+      - BASE_URL=https://sip-in-ease.duckdns.org
     depends_on:
       - db
       - ai_service
 
-  # 3. AI SERVICE (Flask)
+  # 4. AI SERVICE (Flask)
   ai_service:
-    build: .  # <-- Dấu chấm nghĩa là build tại thư mục hiện tại
+    build: .
     ports:
       - "5000:5000"
     volumes:
-      - ./Data:/app/Data # <-- Share thư mục Data để không bị mất model
+      - ./Data:/app/Data
     deploy:
       resources:
         limits:
           memory: 1G
 
+# Khai báo nơi lưu dữ liệu
 volumes:
   mysql_data:
+  caddy_data:
+  caddy_config:
