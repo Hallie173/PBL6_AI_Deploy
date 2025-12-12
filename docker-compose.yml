@@ -23,6 +23,15 @@ services:
       - DB_PASSWORD=123456
       - DB_NAME=pbl6_db
       - AI_SERVICE_URL=http://ai_service:5000 # <-- Backend gọi AI qua tên này
+      - PORT=8080
+      - NODE_ENV=development
+      - AI_SERVICE_URL=http://ai_service:5000
+      
+      - MAIL_USER=phuonghaleduy@gmail.com
+      - MAIL_PASS=yequ yzgt eati wnih
+      
+      - JWT_SECRET=mysecretkey123
+      - BASE_URL=http://103.90.225.223:8080
     depends_on:
       - db
       - ai_service
