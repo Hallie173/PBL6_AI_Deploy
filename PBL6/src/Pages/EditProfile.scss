@@ -5,7 +5,6 @@
   padding: 0 20px;
   min-height: calc(100vh - 88px);
   box-sizing: border-box;
-  position: relative;
   background-color: #f5f7fa;
 }
 
@@ -56,13 +55,11 @@
     label {
       width: 30%;
       font-weight: 600;
-      margin-bottom: 5px;
       color: #333;
     }
 
     .input-field {
       flex: 1;
-      box-sizing: border-box;
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -72,14 +69,6 @@
       &:focus {
         border-color: #007bff;
         outline: none;
-      }
-
-      .option-field {
-      box-sizing: border-box;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
       }
     }
 
@@ -93,22 +82,18 @@
       margin-left: 10px;
       cursor: pointer;
 
-    &:hover {
-      background-color: #21687f;
-    }
+      &:hover {
+        background-color: #21687f;
+      }
     }
   }
-
 }
 
 .button-section {
-  position: absolute;
-  bottom: 30px;
-  left: 0;
-  right: 0;
+  margin-top: 40px;
   display: flex;
   justify-content: space-between;
-  padding: 0 40px;
+  width: 60%;
 
   .change-password-btn,
   .save-btn {
@@ -139,6 +124,10 @@
   }
 }
 
+/* ========================= */
+/*         MODAL FIXED       */
+/* ========================= */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -149,7 +138,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 99999;
+  /* FIXED: đảm bảo luôn nổi trên tất cả */
 }
 
 .modal-content {
