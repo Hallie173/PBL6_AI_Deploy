@@ -44,12 +44,33 @@ const storage = multer.diskStorage({
 export const upload = multer({ storage });
 
 // --- AUTH CONTROLLERS ---
+// --- AUTH CONTROLLERS ---
 export const sendCode = async (req, res) => {
   try {
-    const { email } = req.body;
+    // Thêm tham số type vào body
+    // type có thể là: 'signup', 'reset_password', 'update_profile'
+    const { email, type } = req.body;
+
+    // VALIDATION: Kiểm tra email trước khi gửi mã
+    if (type === "signup" || type === "update_profile") {
+      // Trường hợp này: Email phải CHƯA TỒN TẠI trong hệ thống
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already in use." });
+      }
+    } else if (type === "reset_password") {
+      // Trường hợp này: Email phải ĐÃ TỒN TẠI (tùy chọn, để bảo mật tốt hơn)
+      const existingUser = await User.findOne({ where: { email } });
+      if (!existingUser) {
+        return res.status(404).json({ message: "Email not found." });
+      }
+    }
+
+    // Logic cũ: Tạo code và gửi mail
     const code = generateCode();
     saveCode(email, code);
     await sendVerificationCode(email, code);
+
     return res.status(200).json({ message: "Verification code sent." });
   } catch (error) {
     console.error("Error sending code:", error);
