@@ -44,7 +44,6 @@ const storage = multer.diskStorage({
 export const upload = multer({ storage });
 
 // --- AUTH CONTROLLERS ---
-// --- AUTH CONTROLLERS ---
 export const sendCode = async (req, res) => {
   try {
     // Thêm tham số type vào body

@@ -49,7 +49,7 @@ const EditProfile = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: newEmail }),
+          body: JSON.stringify({ email: newEmail, type: "update_profile" }),
         }
       );
       const result = await response.json();
