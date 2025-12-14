@@ -35,6 +35,8 @@ services:
   # 3. BACKEND (NodeJS)
   backend:
     build: ./PBL6_BE
+    volumes:
+      - ./uploads:/app/uploads
     environment:
       - DB_HOST=db
       - DB_USER=root
