@@ -1,8 +1,10 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import "./SignupPage.scss";
 import webLogo from "../assets/images/logo.png";
 import { Link } from "react-router-dom";
+
+const EyeIcon = () => <span>👁️</span>;
+const EyeSlashIcon = () => <span>🙈</span>;
 
 const SignUpPage = () => {
   const [email, setEmail] = useState("");
@@ -11,12 +13,15 @@ const SignUpPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
 
+  // --- THÊM STATE HIỂN THỊ ---
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const handleSendCode = async () => {
     if (!email) {
       alert("Please enter your email address first.");
       return;
     }
-
     try {
       const response = await fetch(
         "https://sip-in-ease.duckdns.org/api/send-verification-code",
@@ -26,22 +31,17 @@ const SignUpPage = () => {
           body: JSON.stringify({ email: email, type: "signup" }),
         }
       );
-
       const result = await response.json();
-
       if (response.ok) {
         alert("Verification code has been sent to your email.");
       } else {
-        const errorMessage =
-          result.message ||
-          "Failed to send verification code. Please try again!";
-        alert(`Error: ${errorMessage}`);
+        alert(
+          `Error: ${result.message || "Failed to send verification code."}`
+        );
       }
     } catch (error) {
       console.error("Send code error:", error);
-      alert(
-        "Unable to connect to the server. Please check the backend server."
-      );
+      alert("Unable to connect to the server.");
     }
   };
 
@@ -51,13 +51,7 @@ const SignUpPage = () => {
       alert("Passwords do not match!");
       return;
     }
-    const data = {
-      email,
-      displayName,
-      password,
-      verificationCode,
-    };
-
+    const data = { email, displayName, password, verificationCode };
     try {
       const response = await fetch(
         "https://sip-in-ease.duckdns.org/api/signup",
@@ -67,20 +61,16 @@ const SignUpPage = () => {
           body: JSON.stringify(data),
         }
       );
-
       const result = await response.json();
-
       if (response.ok) {
         alert("Signup successful!");
         window.location.href = "/";
       } else {
-        const errorMessage =
-          result.message || "Signup failed! Please try again!";
-        alert(`Error: ${errorMessage}`);
+        alert(`Error: ${result.message || "Signup failed!"}`);
       }
     } catch (error) {
       console.error("Signup error:", error);
-      alert("Server connection error. Please check the backend server.");
+      alert("Server connection error.");
     }
   };
 
@@ -88,17 +78,12 @@ const SignUpPage = () => {
     <div className="signup-container">
       <div className="signup-form">
         <div className="signup-wrapper">
-          <img
-            src={webLogo}
-            alt="Abnormal Situation Detection System"
-            className="signup-logo"
-          />
+          <img src={webLogo} alt="Logo" className="signup-logo" />
           <h2 className="signup-title">Create your account</h2>
         </div>
 
         <div className="signup-form-container">
           <form className="signup-form-content" onSubmit={handleSubmit}>
-            {/* Email */}
             <div className="form-group">
               <label htmlFor="email">Email Address</label>
               <input
@@ -111,7 +96,6 @@ const SignUpPage = () => {
               />
             </div>
 
-            {/* Username */}
             <div className="form-group">
               <label htmlFor="display-name">Display Name</label>
               <input
@@ -124,33 +108,50 @@ const SignUpPage = () => {
               />
             </div>
 
-            {/* Password */}
+            {/* --- PASSWORD FIELD --- */}
             <div className="form-group">
               <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="password-wrapper">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="toggle-password-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
+                </button>
+              </div>
             </div>
 
-            {/* Confirm Password */}
+            {/* --- CONFIRM PASSWORD FIELD --- */}
             <div className="form-group">
               <label htmlFor="confirm-password">Confirm Password</label>
-              <input
-                id="confirm-password"
-                name="confirm-password"
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
+              <div className="password-wrapper">
+                <input
+                  id="confirm-password"
+                  name="confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="toggle-password-btn"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeSlashIcon /> : <EyeIcon />}
+                </button>
+              </div>
             </div>
 
-            {/* Email Verifying Code */}
             <div className="form-group verify-group">
               <label htmlFor="verify-code">Email Verifying Code</label>
               <div className="verify-row">
@@ -173,7 +174,6 @@ const SignUpPage = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button type="submit" className="submit-btn">
               Sign up
             </button>

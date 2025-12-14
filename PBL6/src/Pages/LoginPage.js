@@ -1,14 +1,21 @@
-import React from "react";
+import React, { useState } from "react"; // Nhớ import useState
 import "./LoginPage.scss";
 import webLogo from "../assets/images/logo.png";
 import { Link } from "react-router-dom";
 
+// Icon SVG đơn giản (Mắt mở / Mắt đóng)
+const EyeIcon = () => <span>👁️</span>; // Hoặc dùng thẻ <i className="fa fa-eye"></i> nếu có FontAwesome
+const EyeSlashIcon = () => <span>🙈</span>;
+
 const LoginPage = () => {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // --- STATE ẨN HIỆN PASSWORD ---
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const response = await fetch(
         "https://sip-in-ease.duckdns.org/api/login",
@@ -18,15 +25,11 @@ const LoginPage = () => {
           body: JSON.stringify({ email, password }),
         }
       );
-
       const result = await response.json();
-
       if (response.ok) {
         alert("Login successfully!");
-
         localStorage.setItem("token", result.token);
         localStorage.setItem("user", JSON.stringify(result.user));
-
         window.location.href = "/";
       } else {
         alert(`Login failed: ${result.message}`);
@@ -78,16 +81,27 @@ const LoginPage = () => {
                   Forgot password?
                 </Link>
               </div>
-              <input
-                id="password"
-                type="password"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-                className="form-input"
-              />
+
+              <div className="password-wrapper">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"} // Toggle type
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  className="form-input"
+                />
+                <button
+                  type="button"
+                  className="toggle-password-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
+                </button>
+              </div>
+              {/* ------------------------------- */}
             </div>
 
             <button type="submit" className="login-button">

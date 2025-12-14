@@ -3,18 +3,22 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import "./ResetPassword.scss";
 import webLogo from "../assets/images/logo.png";
 
+const EyeIcon = () => <span>👁️</span>;
+const EyeSlashIcon = () => <span>🙈</span>;
+
 const ResetPassword = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Lấy email được truyền từ trang trước (Forgot Password Page)
-  // Nếu không có, mặc định là chuỗi rỗng (nhưng input sẽ bị disable)
   const initialEmail = location.state?.email || "";
 
   const [email] = useState(initialEmail);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
+
+  // --- STATE ẨN HIỆN ---
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
 
   useEffect(() => {
     if (!initialEmail) {
@@ -23,10 +27,8 @@ const ResetPassword = () => {
     }
   }, [initialEmail, navigate]);
 
-  // Logic gửi code (Tái sử dụng từ Signup)
   const handleSendCode = async () => {
     if (!email) return;
-
     try {
       const response = await fetch(
         "https://sip-in-ease.duckdns.org/api/send-verification-code",
@@ -36,15 +38,13 @@ const ResetPassword = () => {
           body: JSON.stringify({ email: initialEmail, type: "reset_password" }),
         }
       );
-
       const result = await response.json();
-
       if (response.ok) {
         alert("Verification code has been sent to your email.");
       } else {
-        const errorMessage =
-          result.message || "Failed to send verification code.";
-        alert(`Error: ${errorMessage}`);
+        alert(
+          `Error: ${result.message || "Failed to send verification code."}`
+        );
       }
     } catch (error) {
       console.error("Send code error:", error);
@@ -52,28 +52,18 @@ const ResetPassword = () => {
     }
   };
 
-  // Logic Reset Password
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (newPassword !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-
     if (!verificationCode) {
       alert("Please enter the verification code sent to your email.");
       return;
     }
-
-    const data = {
-      email,
-      verificationCode,
-      newPassword,
-    };
-
+    const data = { email, verificationCode, newPassword };
     try {
-      // Giả định API endpoint là /api/reset-password
       const response = await fetch(
         "https://sip-in-ease.duckdns.org/api/reset-password",
         {
@@ -82,18 +72,14 @@ const ResetPassword = () => {
           body: JSON.stringify(data),
         }
       );
-
       const result = await response.json();
-
       if (response.ok) {
         alert(
           "Password reset successful! Please login with your new password."
         );
         navigate("/login");
       } else {
-        const errorMessage =
-          result.message || "Reset password failed! Please check your code.";
-        alert(`Error: ${errorMessage}`);
+        alert(`Error: ${result.message || "Reset password failed!"}`);
       }
     } catch (error) {
       console.error("Reset error:", error);
@@ -114,7 +100,6 @@ const ResetPassword = () => {
 
         <div className="reset-form-container">
           <form className="reset-form-content" onSubmit={handleSubmit}>
-            {/* Email (Read Only) */}
             <div className="form-group">
               <label htmlFor="email">Email Address</label>
               <input
@@ -122,12 +107,11 @@ const ResetPassword = () => {
                 name="email"
                 type="email"
                 value={email}
-                readOnly // Chỉ đọc theo yêu cầu
-                disabled={!email} // Disable visual style nếu rỗng
+                readOnly
+                disabled={!email}
               />
             </div>
 
-            {/* Verification Code + Send Button */}
             <div className="form-group verify-group">
               <label htmlFor="verify-code">Verification Code</label>
               <div className="verify-row">
@@ -150,35 +134,53 @@ const ResetPassword = () => {
                 </button>
               </div>
             </div>
-            {/* New Password */}
+
+            {/* --- NEW PASSWORD --- */}
             <div className="form-group">
               <label htmlFor="new-password">New Password</label>
-              <input
-                id="new-password"
-                name="new-password"
-                type="password"
-                required
-                placeholder="Enter new password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
+              <div className="password-wrapper">
+                <input
+                  id="new-password"
+                  name="new-password"
+                  type={showNewPass ? "text" : "password"}
+                  required
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="toggle-password-btn"
+                  onClick={() => setShowNewPass(!showNewPass)}
+                >
+                  {showNewPass ? <EyeSlashIcon /> : <EyeIcon />}
+                </button>
+              </div>
             </div>
 
-            {/* Confirm New Password */}
+            {/* --- CONFIRM PASSWORD --- */}
             <div className="form-group">
               <label htmlFor="confirm-password">Confirm New Password</label>
-              <input
-                id="confirm-password"
-                name="confirm-password"
-                type="password"
-                required
-                placeholder="Re-enter new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
+              <div className="password-wrapper">
+                <input
+                  id="confirm-password"
+                  name="confirm-password"
+                  type={showConfirmPass ? "text" : "password"}
+                  required
+                  placeholder="Re-enter new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="toggle-password-btn"
+                  onClick={() => setShowConfirmPass(!showConfirmPass)}
+                >
+                  {showConfirmPass ? <EyeSlashIcon /> : <EyeIcon />}
+                </button>
+              </div>
             </div>
 
-            {/* Submit Button */}
             <button type="submit" className="submit-btn">
               Reset Password
             </button>

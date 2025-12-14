@@ -2,23 +2,28 @@ import React, { useEffect, useState } from "react";
 import "./EditProfile.scss";
 import defaultAvatar from "../assets/images/avatar.png";
 
+const EyeIcon = () => <span>👁️</span>;
+const EyeSlashIcon = () => <span>🙈</span>;
+
 const EditProfile = () => {
-  // State cho hiển thị
   const [avatar, setAvatar] = useState(defaultAvatar);
   const [fileAvatar, setFileAvatar] = useState(null);
-
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
 
-  // State cho Modal
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
+
+  // --- STATE CHO 3 Ô INPUT TRONG MODAL ---
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
 
   useEffect(() => {
     const userInfo = localStorage.getItem("user");
@@ -43,6 +48,7 @@ const EditProfile = () => {
       alert("Please enter your new email address first!");
       return;
     }
+    // ... Logic giống cũ
     try {
       const response = await fetch(
         "https://sip-in-ease.duckdns.org/api/send-verification-code",
@@ -67,35 +73,28 @@ const EditProfile = () => {
   };
 
   const handleSave = async () => {
+    // ... Logic giữ nguyên
     try {
       const token = localStorage.getItem("token");
       if (!token || token === "undefined") {
         alert("Authentication failed. Please log in again.");
         return;
       }
-
       const formData = new FormData();
       formData.append("displayName", displayName);
       formData.append("newEmail", newEmail);
       formData.append("verificationCode", verificationCode);
-
-      if (fileAvatar) {
-        formData.append("avatar", fileAvatar);
-      }
+      if (fileAvatar) formData.append("avatar", fileAvatar);
 
       const response = await fetch(
         "https://sip-in-ease.duckdns.org/api/update-profile",
         {
           method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           body: formData,
         }
       );
-
       const result = await response.json();
-
       if (response.ok) {
         alert("Profile updated successfully!");
         localStorage.setItem("user", JSON.stringify(result.user));
@@ -109,14 +108,12 @@ const EditProfile = () => {
     }
   };
 
-  // --- HÀM XỬ LÝ ĐỔI MẬT KHẨU ---
   const handlePasswordInput = (e) => {
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
   };
 
   const handleSubmitPassword = async () => {
     const { currentPassword, newPassword, confirmPassword } = passwordData;
-
     if (!currentPassword || !newPassword || !confirmPassword) {
       alert("Please fill in all password fields.");
       return;
@@ -129,7 +126,6 @@ const EditProfile = () => {
       alert("New password must be at least 6 characters.");
       return;
     }
-
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
@@ -140,13 +136,9 @@ const EditProfile = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            currentPassword,
-            newPassword,
-          }),
+          body: JSON.stringify({ currentPassword, newPassword }),
         }
       );
-
       const result = await response.json();
       if (response.ok) {
         alert("Password changed successfully!");
@@ -156,6 +148,10 @@ const EditProfile = () => {
           newPassword: "",
           confirmPassword: "",
         });
+        // Reset visibility state
+        setShowCurrentPass(false);
+        setShowNewPass(false);
+        setShowConfirmPass(false);
       } else {
         alert(`Error: ${result.message || "Failed to change password."}`);
       }
@@ -168,6 +164,7 @@ const EditProfile = () => {
   return (
     <div className="edit-profile">
       <h1 className="title">Edit Profile</h1>
+      {/* ... Phần Avatar và Info giữ nguyên ... */}
       <div className="avatar-section">
         <img src={avatar} alt="User Avatar" className="avatar-image" />
         <label htmlFor="avatarUpload" className="edit-avatar-btn">
@@ -233,7 +230,7 @@ const EditProfile = () => {
       <div className="button-section">
         <button
           className="change-password-btn"
-          onClick={() => setShowPasswordModal(true)} // <--- THÊM DÒNG NÀY ĐỂ MỞ MODAL
+          onClick={() => setShowPasswordModal(true)}
         >
           Change Password
         </button>
@@ -247,35 +244,67 @@ const EditProfile = () => {
           <div className="modal-content">
             <h2>Change Password</h2>
             <div className="modal-body">
+              {/* CURRENT PASSWORD */}
               <div className="modal-item">
                 <label>Current Password</label>
-                <input
-                  type="password"
-                  name="currentPassword"
-                  value={passwordData.currentPassword}
-                  onChange={handlePasswordInput}
-                  placeholder="Enter current password"
-                />
+                <div className="password-wrapper">
+                  <input
+                    type={showCurrentPass ? "text" : "password"}
+                    name="currentPassword"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordInput}
+                    placeholder="Enter current password"
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password-btn"
+                    onClick={() => setShowCurrentPass(!showCurrentPass)}
+                  >
+                    {showCurrentPass ? <EyeSlashIcon /> : <EyeIcon />}
+                  </button>
+                </div>
               </div>
+
+              {/* NEW PASSWORD */}
               <div className="modal-item">
                 <label>New Password</label>
-                <input
-                  type="password"
-                  name="newPassword"
-                  value={passwordData.newPassword}
-                  onChange={handlePasswordInput}
-                  placeholder="Enter new password"
-                />
+                <div className="password-wrapper">
+                  <input
+                    type={showNewPass ? "text" : "password"}
+                    name="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordInput}
+                    placeholder="Enter new password"
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password-btn"
+                    onClick={() => setShowNewPass(!showNewPass)}
+                  >
+                    {showNewPass ? <EyeSlashIcon /> : <EyeIcon />}
+                  </button>
+                </div>
               </div>
+
+              {/* CONFIRM PASSWORD */}
               <div className="modal-item">
                 <label>Confirm Password</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={passwordData.confirmPassword}
-                  onChange={handlePasswordInput}
-                  placeholder="Confirm new password"
-                />
+                <div className="password-wrapper">
+                  <input
+                    type={showConfirmPass ? "text" : "password"}
+                    name="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordInput}
+                    placeholder="Confirm new password"
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password-btn"
+                    onClick={() => setShowConfirmPass(!showConfirmPass)}
+                  >
+                    {showConfirmPass ? <EyeSlashIcon /> : <EyeIcon />}
+                  </button>
+                </div>
               </div>
             </div>
             <div className="modal-footer">
