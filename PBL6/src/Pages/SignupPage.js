@@ -23,7 +23,7 @@ const SignUpPage = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: newEmail, type: "signup" }),
+          body: JSON.stringify({ email: email, type: "signup" }),
         }
       );
 
