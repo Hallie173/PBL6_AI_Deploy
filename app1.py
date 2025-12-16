@@ -19,16 +19,16 @@ from tensorflow import keras
 # ----------------------------
 # 1. CONFIG
 # ----------------------------
-MODEL_PATH = "Data/best_yolo_resnet.keras" # Đảm bảo đường dẫn đúng
+MODEL_PATH = "Data/best_yolo_resnet.keras" 
 
 INFER_SIZE = 320
 CLASS_THRESHOLDS = {
-    0: 0.15,  # Fire: Cần nhạy một chút (0.1)
-    1: 0.2,  # Fall: Cần chắc chắn mới báo (0.6) để tránh nhầm với nằm ngủ
-    2: 0.1   # Not-fall: Chỉ cần hơi giống là được (0.1)
+    0: 0.15,  
+    1: 0.2,   
+    2: 0.1    
 }
 DEFAULT_THRES = 0.1
-IOU_THRES = 0.3   # Mức chuẩn: Box chồng nhau >30% sẽ bị xóa
+IOU_THRES = 0.3   
 FRAME_QUEUE_MAXLEN = 5
 
 WINDOW_SAMPLES = 6
@@ -51,7 +51,8 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 state_lock = threading.Lock()
 frame_queue = deque(maxlen=FRAME_QUEUE_MAXLEN)
-last_detection_result = {"frame_width": 0, "frame_height": 0, "detections": []}
+# Thêm trường fps mặc định vào dictionary kết quả
+last_detection_result = {"frame_width": 0, "frame_height": 0, "detections": [], "fps": 0} 
 worker_running = True
 states = {}
 
@@ -71,7 +72,7 @@ except Exception as e:
     sys.exit(1)
 
 # ----------------------------
-# 4. UTILS & DECODER (UPDATED WITH TF NMS)
+# 4. UTILS & DECODER
 # ----------------------------
 
 def letterbox_resize(image, target_size=INFER_SIZE, color=(128,128,128)):
@@ -85,47 +86,34 @@ def letterbox_resize(image, target_size=INFER_SIZE, color=(128,128,128)):
     return padded, scale, (dx, dy)
 
 def decode_predictions(preds, orig_shape, scale_params, iou_thres=IOU_THRES):
-    """
-    Giải mã output với ngưỡng Confidence riêng cho từng Class
-    """
-    output = preds[0] # (20, 20, 8)
+    output = preds[0] 
     grid_h, grid_w = output.shape[0], output.shape[1]
     
-    # Flatten
     output_flat = output.reshape(-1, output.shape[-1])
     
-    # Tách thành phần
     objectness = output_flat[:, 0]
     box_coords = output_flat[:, 1:5]
     class_probs = output_flat[:, 5:]
     
-    # --- 1. TÍNH TOÁN SCORE VÀ CLASS ---
     class_ids = np.argmax(class_probs, axis=1)
     class_max_scores = np.max(class_probs, axis=1)
     final_scores = objectness * class_max_scores
     
-    # --- 2. LỌC THEO NGƯỠNG RIÊNG (DYNAMIC THRESHOLD) ---
-    # Tạo mảng ngưỡng tương ứng với từng box dựa trên class_id của nó
-    # List comprehension này sẽ tạo ra một mảng ngưỡng có độ dài bằng số lượng box (400)
     dynamic_thresholds = np.array([CLASS_THRESHOLDS.get(cid, DEFAULT_THRES) for cid in class_ids])
     
-    # So sánh Score của từng box với ngưỡng của chính nó
     mask = final_scores > dynamic_thresholds
     
     if not np.any(mask):
         return []
     
-    # Lấy dữ liệu đã lọc
     sel_boxes_norm = box_coords[mask]
     sel_scores = final_scores[mask]
     sel_classes = class_ids[mask]
     
-    # Lấy lại index grid
     indices = np.where(mask)[0]
     grid_rows = indices // grid_w
     grid_cols = indices % grid_w
     
-    # --- 3. DECODE TỌA ĐỘ ---
     tf_boxes = []
     decoded_boxes_info = [] 
     
@@ -133,13 +121,11 @@ def decode_predictions(preds, orig_shape, scale_params, iou_thres=IOU_THRES):
         bx, by, bw, bh = sel_boxes_norm[i]
         c, r = grid_cols[i], grid_rows[i]
         
-        # Grid Offset -> Normalized Global
         cx = (bx + c) / grid_w
         cy = (by + r) / grid_h
         w = bw
         h = bh 
         
-        # Convert Center -> Corner [y1, x1, y2, x2]
         y1 = cy - h/2
         x1 = cx - w/2
         y2 = cy + h/2
@@ -157,20 +143,16 @@ def decode_predictions(preds, orig_shape, scale_params, iou_thres=IOU_THRES):
     tf_boxes = np.array(tf_boxes, dtype=np.float32)
     tf_scores = np.array([d["score"] for d in decoded_boxes_info], dtype=np.float32)
     
-    # --- 4. CHẠY NMS ---
-    # Lưu ý: score_threshold ở đây để là 0.0 hoặc rất thấp, 
-    # vì ta đã lọc thủ công bằng dynamic threshold ở bước 2 rồi.
     selected_indices = tf.image.non_max_suppression(
         boxes=tf_boxes,
         scores=tf_scores,
         max_output_size=20, 
         iou_threshold=iou_thres,
-        score_threshold=0.0 # Quan trọng: Đừng lọc lại ở đây nữa
+        score_threshold=0.0 
     )
     
     selected_indices = selected_indices.numpy()
     
-    # --- 5. MAP VỀ ẢNH GỐC ---
     scale, dx, dy = scale_params
     final_detections = []
     
@@ -205,17 +187,30 @@ def decode_predictions(preds, orig_shape, scale_params, iou_thres=IOU_THRES):
 def worker_loop():
     global last_detection_result
     print("✅ AI Worker Started with TF-NMS")
+    
+    # [ADDED FPS LOGIC] Khởi tạo biến đếm thời gian
+    prev_frame_time = 0
+    current_fps = 0
 
     while worker_running:
         frame_tuple = None
         with state_lock:
             if frame_queue:
                 frame_tuple = frame_queue.pop()
-                frame_queue.clear() # Lấy frame mới nhất, bỏ qua cũ
+                frame_queue.clear() 
 
         if not frame_tuple:
             time.sleep(0.01)
             continue
+
+        # [ADDED FPS LOGIC] Bắt đầu tính thời gian xử lý thực tế
+        new_frame_time = time.time()
+        if prev_frame_time > 0:
+            time_diff = new_frame_time - prev_frame_time
+            if time_diff > 0:
+                current_fps = 1.0 / time_diff # Tính FPS tức thời
+        prev_frame_time = new_frame_time
+        # [END FPS LOGIC]
 
         frame, frame_ts, user_id = frame_tuple
 
@@ -231,7 +226,7 @@ def worker_loop():
             # Inference
             preds = model.predict(input_tensor, verbose=0)
 
-            # Post-process (with corrected NMS)
+            # Post-process
             detections = decode_predictions(preds, (h0, w0), (scale, dx, dy))
 
             # --- LOGIC ALERT TRIGGER ---
@@ -253,7 +248,8 @@ def worker_loop():
                 st["buffer"].append(frame_label)
                 
                 if LOG_BUFFER_STATE:
-                    print(f"User {user_id} Buf: {[x[0] for x in st['buffer']]} -> Detect: {len(detections)}")
+                    # In thêm FPS vào log để tiện theo dõi
+                    print(f"User {user_id} | FPS: {int(current_fps)} | Buf: {[x[0] for x in st['buffer']]} -> Detect: {len(detections)}")
 
                 if len(st["buffer"]) == WINDOW_SAMPLES:
                     if st["buffer"].count("FIRE") >= REQUIRED_MATCH:
@@ -268,14 +264,15 @@ def worker_loop():
                             print(f"🚨 ALERT TRIGGERED: {confirmed_alert}")
                             st["buffer"].clear()
                         else:
-                            confirmed_alert = None # Cooldown
+                            confirmed_alert = None 
 
             with state_lock:
                 last_detection_result = {
                     "frame_width": w0,
                     "frame_height": h0,
                     "detections": detections,
-                    "alert_trigger": confirmed_alert
+                    "alert_trigger": confirmed_alert,
+                    "fps": round(current_fps, 1) # [ADDED FPS LOGIC] Gửi FPS về Client
                 }
 
         except Exception as e:
@@ -305,7 +302,6 @@ def detect_frame_route():
 
         with state_lock:
             frame_queue.append((frame, time.time(), user_id))
-            # Trả về kết quả của frame trước đó (gần nhất) để UI mượt hơn
             resp = dict(last_detection_result)
 
         return jsonify(resp)
