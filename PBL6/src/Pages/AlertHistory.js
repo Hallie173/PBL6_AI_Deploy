@@ -167,7 +167,7 @@ function AlertHistory() {
               border: "1px solid #ccc",
             }}
           >
-            <option value="ALL">Tất cả</option>
+            <option value="ALL">ALL</option>
             <option value="FIRE">🔥 Fire</option>
             <option value="FALL">⚠️ Fall</option>
           </select>
