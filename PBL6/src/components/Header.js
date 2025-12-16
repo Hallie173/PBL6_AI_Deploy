@@ -5,7 +5,6 @@ import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [user, setUser] = React.useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -20,7 +19,7 @@ const Header = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    navigate("/login");
+    window.location.href = "/login";
   };
 
   return (

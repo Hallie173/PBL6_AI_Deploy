@@ -82,7 +82,11 @@ function AlertHistory() {
   const totalPages = Math.ceil(filteredAlerts.length / alertsPerPage);
 
   const handleDelete = async (alertID) => {
-    if (!window.confirm("Do you want to permanently delete this alert?")) {
+    if (
+      !window.confirm(
+        "Do you want to permanently delete alert #" + alertID + "?"
+      )
+    ) {
       return;
     }
 
