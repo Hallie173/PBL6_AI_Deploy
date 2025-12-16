@@ -124,7 +124,7 @@ function AlertHistory() {
 
   return (
     <div className="alert-history">
-      <h1 className="title">Lịch sử cảnh báo</h1>
+      <h1 className="title">Alert History</h1>
 
       {/* KHU VỰC BỘ LỌC */}
       <div
@@ -138,7 +138,7 @@ function AlertHistory() {
       >
         <div className="filter-group">
           <label style={{ fontWeight: "bold", marginRight: "5px" }}>
-            Ngày:
+            Date:
           </label>
           <input
             type="date"
@@ -155,7 +155,7 @@ function AlertHistory() {
 
         <div className="filter-group">
           <label style={{ fontWeight: "bold", marginRight: "5px" }}>
-            Loại:
+            Type:
           </label>
           <select
             className="filter-select"
