@@ -39,7 +39,7 @@ export const receiveEvidence = async (req, res) => {
       sessionID,
       sequenceIndex,
       imageUrl: fileName,
-      timestamp: new Date(timestamp),
+      timestamp,
     });
 
     console.log(`📸 Lưu ảnh sequence ${sequenceIndex} OK`);
